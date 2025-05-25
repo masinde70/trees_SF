@@ -1,9 +1,14 @@
-import pandas as pd
-import plotly.express as px
-import streamlit as st
 
-st.set_page_config(layout='wide')
-st.title("SF Trees")
+
+```python
+import pandas as pd          # Data manipulation library
+import plotly.express as px  # Visualization library
+import streamlit as st       # Web app framework
+
+st.set_page_config(layout='wide')  # Use full width for layout
+st.title("SF Trees")               # App title
+
+# App description
 st.write(
     """
     This app analyses trees in San Francisco using
@@ -13,38 +18,44 @@ st.write(
     """
 )
 
-trees_df = pd.read_csv("trees.csv") # load data
-#st.write(trees_df.head()) # show data
-today = pd.to_datetime('today') # get date
-trees_df['date'] = pd.to_datetime(trees_df['date']) # convert to datetime
-trees_df['age'] = (today - trees_df['date']).dt.days # calculate age
-unique_caretakers = trees_df["caretaker"].unique() # get unique caretakers
-owners = st.sidebar.multiselect("Tree Owner Filter", unique_caretakers)
-graph_color = st.sidebar.color_picker("Graph Colors")
+trees_df = pd.read_csv("trees.csv")                 # Load dataset
+today = pd.to_datetime('today')                     # Current date
+trees_df['date'] = pd.to_datetime(trees_df['date']) # Parse tree planting dates
+trees_df['age'] = (today - trees_df['date']).dt.days # Compute tree age in days
+
+unique_caretakers = trees_df["caretaker"].unique()  # All tree owners
+owners = st.sidebar.multiselect("Tree Owner Filter", unique_caretakers) # Owner filter
+graph_color = st.sidebar.color_picker("Graph Colors") # Color selector
 
 if owners:
-    trees_df = trees_df[trees_df["caretaker"].isin(owners)] # filter by owner
-df_dbh_grouped = pd.DataFrame(trees_df.groupby(["dbh"]).count()['tree_id']) # group by dbh
-df_dbh_grouped.columns = ['tree_count'] # rename column
+    trees_df = trees_df[trees_df["caretaker"].isin(owners)] # Filter by owner
 
-col1, col2 = st.columns(2)
+df_dbh_grouped = pd.DataFrame(
+    trees_df.groupby(["dbh"]).count()['tree_id']
+)                    # Count trees by diameter (dbh)
+df_dbh_grouped.columns = ['tree_count'] # Rename column
+
+col1, col2 = st.columns(2)             # Split page into two columns
+
 with col1:
-    fig = px.histogram(trees_df, x=trees_df["dbh"],
-                        title="Tree Width",
-                        color_discrete_sequence=[graph_color]
-                        )
+    # Histogram: distribution of tree widths (dbh)
+    fig = px.histogram(
+        trees_df, 
+        x=trees_df["dbh"],
+        title="Tree Width",
+        color_discrete_sequence=[graph_color]
+    )
     fig.update_xaxes(title_text="Width")
-    st.plotly_chart(fig, 
-                    use_container_width=True)
-    
- 
+    st.plotly_chart(fig, use_container_width=True)
+
 with col2:
+    # Histogram: distribution of tree ages
     fig = px.histogram(
         trees_df,
-          x=trees_df["age"], 
+        x=trees_df["age"], 
         title="Tree Age",
-        color_discrete_sequence=[graph_color])
-    st.plotly_chart(fig, 
-                    use_container_width=True)
- 
-    
+        color_discrete_sequence=[graph_color]
+    )
+    st.plotly_chart(fig, use_container_width=True)
+```
+
